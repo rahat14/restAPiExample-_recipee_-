@@ -22,17 +22,19 @@ public class adapter extends RecyclerView.Adapter<adapter.recyclerViewHolder> {
 
     private  List<recipe>recipes ;
     private  Context context ;
-
+    private  String KEY ;
     private ItemClickListenter   itemClickListenter   ;
 
 
 
-    public  adapter (List<recipe> recipes , Context context , ItemClickListenter itemClickListenter ){
+    public  adapter (List<recipe> recipes , Context context , ItemClickListenter itemClickListenter   ){
 
 
         this.recipes = recipes ;
         this.context = context ;
         this.itemClickListenter = itemClickListenter ;
+
+
 
 
     }
@@ -59,16 +61,19 @@ public class adapter extends RecyclerView.Adapter<adapter.recyclerViewHolder> {
         holder.preperedTimeTv.setText(String.valueOf(recipe.getReadyInMinutes())  +  " Min");
 
 
+
+
         try {
             Glide.with(context)
                     .load(recipe.getImage())
                     .centerCrop()
                     .into(holder.imageView) ;
         }
-        catch ( Exception e ){
-
+        catch (Exception e )
+        {
 
         }
+
 
 
 

@@ -44,5 +44,11 @@ dependencies {
     // for animation
     implementation "com.airbnb.android:lottie:3.3.1"
 
+    //shimmer
+    implementation 'com.facebook.shimmer:shimmer:0.1.0@aar'
+
+
+
+
 
 }

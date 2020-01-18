@@ -1,18 +1,22 @@
 package com.metacodersbd.restapiexampleclass;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 
 import android.util.Log;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 //TODO
 // Search with query
 // Single recipee VIEW ....
 //
 
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.metacodersbd.restapiexampleclass.model.recipe;
 import com.metacodersbd.restapiexampleclass.responseModel.RecipeResponse;
 
@@ -32,22 +36,31 @@ public class MainActivity extends AppCompatActivity {
     adapter.ItemClickListenter itemClickListenter ;
     RecyclerView recyclerView;
     LinearLayoutManager llm ;
+    SearchView searchView ;
     Retrofit retrofit ;
-
+    private ShimmerFrameLayout mShimmerViewContainer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         recyclerView = findViewById(R.id.listview);
+        searchView = findViewById(R.id.search_bar) ;
+
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
+
+
+        mShimmerViewContainer = findViewById(R.id.shimmer_view_container);
+
+
+
+
 
         getData();
     }
 
-    public  void getData()
-    {
+
+    public  void getData() {
         // retrofit initlize
 
         retrofit = new Retrofit.Builder()
@@ -58,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         // call api
         api  apiInterface = retrofit.create(api.class) ;
 
-        Call<RecipeResponse> call = apiInterface.getRecipee("20" , constants.key) ;
+        Call<RecipeResponse> call = apiInterface.getRecipee("15" , constants.key) ;
 
         call.enqueue(
                 new Callback<RecipeResponse>() {
@@ -68,13 +81,23 @@ public class MainActivity extends AppCompatActivity {
 
 
                       //  Log.d("Response : "  ,  response.body().toString()  ) ;
+                    if(response.isSuccessful())
+                    {
+                        if(response.code()==200){
+                            List<recipe> recipes = new ArrayList<>(response.body().getRecipeList());
 
-                        List<recipe> recipes = new ArrayList<>(response.body().getRecipeList());
+
+                            recyclerVierAdapter = new adapter(recipes , MainActivity.this  ,itemClickListenter  )  ;
+                            recyclerView.setAdapter(recyclerVierAdapter) ;
+
+                            recyclerView.setLayoutManager(llm) ;
+                        }
+                        mShimmerViewContainer.stopShimmerAnimation();
+                        mShimmerViewContainer.setVisibility(View.GONE);
+                    }
 
 
-                        recyclerVierAdapter = new adapter(recipes , MainActivity.this  ,itemClickListenter )  ;
-                        recyclerView.setAdapter(recyclerVierAdapter) ;
-                        recyclerView.setLayoutManager(llm) ;
+
 
                     }
 
@@ -84,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext() , "Error Code : " + call + "\n Msg : " + t.getMessage() , Toast.LENGTH_LONG)
                                 .show();
 
-                        Log.d("ERROR TEXT : "  ,  call + "Mgs :" + t.getMessage().toString() ) ;
+                        Log.d("ERROR TEXT : "  ,  call + "Mgs :" + t.getMessage() ) ;
 
                     }
                 }
@@ -96,7 +119,17 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mShimmerViewContainer.startShimmerAnimation();
+    }
 
+    @Override
+    protected void onPause() {
+        mShimmerViewContainer.stopShimmerAnimation();
+        super.onPause();
+    }
 
 
 }

@@ -1,9 +1,6 @@
 package com.metacodersbd.restapiexampleclass;
 
-import com.metacodersbd.restapiexampleclass.model.recipe;
 import com.metacodersbd.restapiexampleclass.responseModel.RecipeResponse;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -18,6 +15,8 @@ public interface api {
                     @Query("number")String num ,
                     @Query("apiKey") String key
             ) ;
+
+
 
 
 
