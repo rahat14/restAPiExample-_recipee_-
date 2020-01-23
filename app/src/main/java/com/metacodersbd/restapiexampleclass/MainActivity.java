@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.metacodersbd.restapiexampleclass.model.recipe;
 import com.metacodersbd.restapiexampleclass.responseModel.RecipeResponse;
+import com.metacodersbd.restapiexampleclass.responseModel.RecipeSearchResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,9 @@ public class MainActivity extends AppCompatActivity {
     adapter.ItemClickListenter itemClickListenter ;
     RecyclerView recyclerView;
     LinearLayoutManager llm ;
+  //  SearchView searchView ;
     SearchView searchView ;
+
     Retrofit retrofit ;
     private ShimmerFrameLayout mShimmerViewContainer;
     @Override
@@ -44,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         recyclerView = findViewById(R.id.listview);
-        searchView = findViewById(R.id.search_bar) ;
+       searchView = findViewById(R.id.search_bar) ;
 
         llm = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(llm);
@@ -53,10 +56,99 @@ public class MainActivity extends AppCompatActivity {
         mShimmerViewContainer = findViewById(R.id.shimmer_view_container);
 
 
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
 
+                startSearchRecipee(query);
+
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+
+                getData();
+
+                return false;
+            }
+        });
 
 
         getData();
+    }
+
+    private void startSearchRecipee(String q ) {
+
+        // implement search
+
+        retrofit = new Retrofit.Builder()
+                .baseUrl(constants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        // call api
+        api  apiInterface = retrofit.create(api.class) ;
+
+        Call<RecipeSearchResponse> call = apiInterface.getSearchMenu(q , "15", constants.key) ;
+
+        call.enqueue(
+                new Callback<RecipeSearchResponse>() {
+                    @Override
+                    public void onResponse(Call<RecipeSearchResponse> call, Response<RecipeSearchResponse> response)
+                    {
+
+
+                        //  Log.d("Response : "  ,  response.body().toString()  ) ;
+                        if(response.isSuccessful())
+                        {
+                            if(response.code()==200){
+                                List<recipe> recipes = new ArrayList<>(response.body().getRecipeList());
+
+
+                                recyclerVierAdapter = new adapter(recipes , MainActivity.this  ,itemClickListenter  , true )  ;
+                                recyclerView.setAdapter(recyclerVierAdapter) ;
+
+                                recyclerView.setLayoutManager(llm) ;
+                            }
+                            mShimmerViewContainer.stopShimmerAnimation();
+                            mShimmerViewContainer.setVisibility(View.GONE);
+                        }
+
+
+
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<RecipeSearchResponse> call, Throwable t) {
+
+                        Toast.makeText(getApplicationContext() , "Error Code : " + call + "\n Msg : " + t.getMessage() , Toast.LENGTH_LONG)
+                                .show();
+
+                        Log.d("ERROR TEXT : "  ,  call + "Mgs :" + t.getMessage() ) ;
+
+                    }
+                }
+        ) ;
+
+
+
+
+
+
+
+
+
+
     }
 
 
@@ -87,13 +179,51 @@ public class MainActivity extends AppCompatActivity {
                             List<recipe> recipes = new ArrayList<>(response.body().getRecipeList());
 
 
-                            recyclerVierAdapter = new adapter(recipes , MainActivity.this  ,itemClickListenter  )  ;
+                            recyclerVierAdapter = new adapter(recipes , MainActivity.this  ,itemClickListenter, false )  ;
                             recyclerView.setAdapter(recyclerVierAdapter) ;
 
                             recyclerView.setLayoutManager(llm) ;
+
+
+                            // get some animation going
+
+                            recyclerView.getViewTreeObserver().addOnPreDrawListener(
+
+                                    new ViewTreeObserver.OnPreDrawListener() {
+                                        @Override
+                                        public boolean onPreDraw() {
+
+                                            recyclerView.getViewTreeObserver().removeOnPreDrawListener( this);
+                                            for( int i = 0 ; i<recyclerView.getChildCount() ; i++)
+                                            {
+                                                View v = recyclerView.getChildAt(i) ;
+                                                v.setAlpha(0.0f);
+                                                v.animate()
+                                                        .alpha(1.0f)
+                                                        .setDuration(300)
+                                                        .setStartDelay(i*50)
+                                                        .start();
+
+
+                                            }
+
+
+                                            return true;
+                                        }
+                                    }
+
+                            );
+
+
+
+
                         }
                         mShimmerViewContainer.stopShimmerAnimation();
                         mShimmerViewContainer.setVisibility(View.GONE);
+
+
+
+
                     }
 
 

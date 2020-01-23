@@ -23,17 +23,21 @@ public class adapter extends RecyclerView.Adapter<adapter.recyclerViewHolder> {
     private  List<recipe>recipes ;
     private  Context context ;
     private  String KEY ;
+    private  boolean isSearched = false ;
+
     private ItemClickListenter   itemClickListenter   ;
 
 
 
-    public  adapter (List<recipe> recipes , Context context , ItemClickListenter itemClickListenter   ){
+    public  adapter (List<recipe> recipes , Context context , ItemClickListenter itemClickListenter ,boolean  state    ){
+
+        // here stae contain => search = true  ,  default = false ;
 
 
         this.recipes = recipes ;
         this.context = context ;
         this.itemClickListenter = itemClickListenter ;
-
+        this.isSearched = state ;
 
 
 
@@ -60,12 +64,20 @@ public class adapter extends RecyclerView.Adapter<adapter.recyclerViewHolder> {
 
         holder.preperedTimeTv.setText(String.valueOf(recipe.getReadyInMinutes())  +  " Min");
 
+        String imageLink =  null  ;
 
+        if( isSearched)
+        {
+         imageLink = "https://spoonacular.com/recipeImages/" + recipe.getImage() ;
+        }
+        else {
+            imageLink = recipe.getImage() ;
 
+        }
 
         try {
             Glide.with(context)
-                    .load(recipe.getImage())
+                    .load(imageLink)
                     .centerCrop()
                     .into(holder.imageView) ;
         }
@@ -73,6 +85,7 @@ public class adapter extends RecyclerView.Adapter<adapter.recyclerViewHolder> {
         {
 
         }
+
 
 
 
